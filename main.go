@@ -1,16 +1,17 @@
 package main
 
 import (
-	"FirstWeek/Routes"
+	"FirstWeek/Internal/Repository"
+	"FirstWeek/Internal/Services"
+	"FirstWeek/Internal/adapter/api"
+	"FirstWeek/Internal/adapter/db"
 	"FirstWeek/Transaction"
 	"fmt"
-	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"net/http"
 )
 
 func main() {
-	port := ":3000"
+	//port := ":3000"
 	memory := Transaction.NewMemory()
 	memory.Add(Transaction.Transaction{
 		Id:        uuid.New(),
@@ -26,13 +27,20 @@ func main() {
 	})
 
 	//Create Routes
-	r := chi.NewRouter()
+	/*r := chi.NewRouter()
 
 	r.Get("/transactions", Routes.GetTransactions(memory))
-	r.Get("/transactionsFromDB", Routes.GetTransactionsFromDB())
-	r.Post("/AddTransaction", Routes.PostAddTransaction(memory))
-	r.Post("/AddTransactionToDB", Routes.PostAddTransactionToDB())
+	r.Get("/transactions-from-DB", Routes.GetTransactionsFromDB())
+	r.Post("/transaction", Routes.PostAddTransaction(memory))
+	r.Post("/transaction-to-DB", Routes.PostAddTransactionToDB())
 
 	fmt.Println("Serving on", port)
-	http.ListenAndServe(port, r)
+	http.ListenAndServe(port, r)*/
+	conn, err := db.NewDBConnection()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	tranRepo := Repository.NewDefaultRepository(conn)
+	tranSer := Services.NewDefaultService(tranRepo)
+	api.NewTransactionController(tranSer)
 }
