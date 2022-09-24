@@ -22,6 +22,7 @@ func TestGetTransactions(t *testing.T) {
 		Amount:    155,
 		Currency:  "EGP",
 		CreatedAt: "2022-19-7",
+		Status:    false,
 	})
 
 	req, err := http.NewRequest("GET", "/transactions", nil)

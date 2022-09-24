@@ -1,6 +1,7 @@
 package db
 
 import (
+	"FirstWeek/Config"
 	"context"
 	"database/sql"
 	"errors"
@@ -8,11 +9,10 @@ import (
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
-	"os"
 )
 
-func NewDBConnection() (*bun.DB, error) {
-	connectionString := os.Getenv("DATABASE_URL")
+func NewDBConnection(configurations Config.Configurations) (*bun.DB, error) {
+	connectionString := configurations.Database.ConnectionString
 	ctx := context.Background()
 	conn, err := pgx.Connect(ctx, connectionString)
 	defer conn.Close(context.Background())

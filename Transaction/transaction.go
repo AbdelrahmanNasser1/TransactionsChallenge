@@ -11,6 +11,7 @@ type Transaction struct {
 	Amount    float64   `json:"amount" validate:"gte=0,lte=100000"`
 	Currency  string    `json:"currency" validate:"len=3"`
 	CreatedAt string    `json:"createdAt"`
+	Status    bool      `json:"status"`
 }
 
 type Getter interface {

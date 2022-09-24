@@ -17,6 +17,7 @@ type TransactionModel struct {
 	Amount        int64     `bun:"amount,notnull"`
 	Currency      string    `bun:"currency,notnull"`
 	CreatedAt     string    `bun:"createdat,notnull"`
+	Status        bool      `bun:"status"`
 }
 
 func ConnectDB(connectionString string) (*bun.DB, error) {

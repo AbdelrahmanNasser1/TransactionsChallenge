@@ -29,6 +29,7 @@ func (s *DefaultTransactionService) Create(ctx context.Context, transaction *Tra
 		Amount:    int64(transaction.Amount),
 		Currency:  transaction.Currency,
 		CreatedAt: transaction.CreatedAt,
+		Status:    transaction.Status,
 	}
 	if err := s.transactionRepo.Create(ctx, &model); err != nil {
 		return nil, err
@@ -38,6 +39,7 @@ func (s *DefaultTransactionService) Create(ctx context.Context, transaction *Tra
 		Amount:    float64(model.Amount),
 		Currency:  model.Currency,
 		CreatedAt: model.CreatedAt,
+		Status:    model.Status,
 	}
 	return &res, nil
 }
@@ -54,6 +56,7 @@ func (s *DefaultTransactionService) List(ctx context.Context) ([]Transaction.Tra
 		temp.Amount = float64(e.Amount)
 		temp.Currency = e.Currency
 		temp.CreatedAt = e.CreatedAt
+		temp.Status = e.Status
 		result = append(result, temp)
 	}
 	return result, nil

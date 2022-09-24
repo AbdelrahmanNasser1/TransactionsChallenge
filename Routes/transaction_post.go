@@ -66,6 +66,7 @@ func PostAddTransactionToDB() http.HandlerFunc {
 			Amount:    int64(transaction.Amount),
 			Currency:  transaction.Currency,
 			CreatedAt: transaction.CreatedAt,
+			Status:    false,
 		}
 		db.NewInsert().Model(&model).Exec(context.Background())
 		writer.Write([]byte("Transaction has been added successfully!!"))

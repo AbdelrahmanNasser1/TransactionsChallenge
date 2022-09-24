@@ -1,6 +1,7 @@
 package main
 
 import (
+	"FirstWeek/Config"
 	"FirstWeek/Internal/Repository"
 	"FirstWeek/Internal/Services"
 	"FirstWeek/Internal/adapter/api"
@@ -8,6 +9,7 @@ import (
 	"FirstWeek/Transaction"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -36,11 +38,28 @@ func main() {
 
 	fmt.Println("Serving on", port)
 	http.ListenAndServe(port, r)*/
-	conn, err := db.NewDBConnection()
+
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	viper.AutomaticEnv()
+	viper.SetConfigType("yml")
+
+	var configuration Config.Configurations
+
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Printf("Error reading config file, %s\n", err)
+	}
+	err := viper.Unmarshal(&configuration)
+	if err != nil {
+		fmt.Printf("Unable to decode into struct, %v", err)
+	}
+
+	conn, err := db.NewDBConnection(configuration)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+
 	tranRepo := Repository.NewDefaultRepository(conn)
 	tranSer := Services.NewDefaultService(tranRepo)
-	api.NewTransactionController(tranSer)
+	api.NewTransactionController(tranSer, configuration)
 }
