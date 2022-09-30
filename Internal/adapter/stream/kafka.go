@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func SaveToKafka(config Config.Configurations, transaction Transaction.Transaction) bool {
@@ -13,7 +16,11 @@ func SaveToKafka(config Config.Configurations, transaction Transaction.Transacti
 	jsonString, err := json.Marshal(transaction)
 	transactionString := string(jsonString)
 	fmt.Println(transactionString)
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": config.Kafka.URL})
+	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": config.Kafka.URL,
+		"security.protocol": "SASL_SSL",
+		"sasl.mechanisms":   "PLAIN",
+		"sasl.username":     config.Kafka.UserName,
+		"sasl.password":     config.Kafka.Password})
 	if err != nil {
 		panic(err)
 		return false
@@ -38,27 +45,34 @@ func ReceiveFromKafka(config Config.Configurations) {
 		"bootstrap.servers": config.Kafka.URL,
 		"group.id":          "group-id-1",
 		"auto.offset.reset": "earliest",
-	})
+		"security.protocol": "SASL_SSL",
+		"sasl.mechanisms":   "PLAIN",
+		"sasl.username":     config.Kafka.UserName,
+		"sasl.password":     config.Kafka.Password})
 
 	if err != nil {
 		panic(err)
 	}
 
 	c.SubscribeTopics([]string{config.Kafka.Topic}, nil)
+	sigchan := make(chan os.Signal, 1)
+	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
-	for {
-		msg, err := c.ReadMessage(0)
-
-		if err == nil {
-			fmt.Printf("Received from Kafka %s: %s\n", msg.TopicPartition, string(msg.Value))
-			event := string(msg.Value)
-			fmt.Println(event)
-		} else {
-			fmt.Printf("Consumer error: %v (%v)\n", err, msg)
-			break
+	run := true
+	for run == true {
+		select {
+		case sig := <-sigchan:
+			fmt.Printf("Caught signal %v: terminating\n", sig)
+			run = false
+		default:
+			ev, err := c.ReadMessage(10)
+			if err != nil {
+				// Errors are informational and automatically handled by the consumer
+				continue
+			}
+			fmt.Printf("Consumed event from topic %s: key = %-10s value = %s\n",
+				*ev.TopicPartition.Topic, string(ev.Key), string(ev.Value))
 		}
 	}
-
 	c.Close()
-
 }
