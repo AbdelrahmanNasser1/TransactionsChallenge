@@ -14,8 +14,8 @@ import (
 func NewDBConnection(configurations Config.Configurations) (*bun.DB, error) {
 	connectionString := configurations.Database.ConnectionString
 	ctx := context.Background()
-	conn, err := pgx.Connect(ctx, connectionString)
-	defer conn.Close(context.Background())
+	con, err := pgx.Connect(ctx, connectionString)
+	defer con.Close(context.Background())
 	if err != nil {
 		return nil, errors.New(err.Error())
 	}
