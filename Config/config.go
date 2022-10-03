@@ -16,10 +16,8 @@ type DatabaseConfigurations struct {
 }
 
 type KafkaConfiguration struct {
-	URL      string
-	Topic    string
-	UserName string
-	Password string
+	URL   string
+	Topic string
 }
 
 // Configurations exported
@@ -30,9 +28,10 @@ type Configurations struct {
 }
 
 func SetUpViper(configurations Configurations) (Configurations, error) {
-	viper.SetConfigName("../config")
+	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
-	viper.AutomaticEnv()
+	viper.AddConfigPath("../Resources")
+	viper.AddConfigPath("$HOME/.Resources")
 	viper.SetConfigType("yml")
 
 	if err := viper.ReadInConfig(); err != nil {

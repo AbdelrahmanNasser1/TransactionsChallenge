@@ -3,76 +3,33 @@ package stream
 import (
 	"FirstWeek/Config"
 	"FirstWeek/Transaction"
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"os"
-	"os/signal"
-	"syscall"
+	"github.com/segmentio/kafka-go"
+	"time"
 )
 
-func SaveToKafka(config Config.Configurations, transaction Transaction.Transaction) bool {
-	fmt.Println("Save to kafka server...")
-	jsonString, err := json.Marshal(transaction)
-	transactionString := string(jsonString)
-	fmt.Println(transactionString)
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": config.Kafka.URL,
-		"security.protocol": "SASL_SSL",
-		"sasl.mechanisms":   "PLAIN",
-		"sasl.username":     config.Kafka.UserName,
-		"sasl.password":     config.Kafka.Password})
-	if err != nil {
-		panic(err)
-		return false
-	}
-	if p == nil {
-		return false
-	}
-	topic := config.Kafka.Topic
-	for _, word := range []string{string(transactionString)} {
-		p.Produce(&kafka.Message{
-			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Value:          []byte(word),
-		}, nil)
-
-	}
-	return true
+func KafkaProducer(transaction *Transaction.Transaction, configurations Config.Configurations) {
+	conn, _ := kafka.DialLeader(context.Background(), "tcp", configurations.Kafka.URL, configurations.Kafka.Topic, 0)
+	conn.SetWriteDeadline(time.Now().Add(time.Second * 10))
+	obj, _ := json.Marshal(&transaction)
+	conn.WriteMessages(kafka.Message{Value: []byte(obj)})
 }
-func ReceiveFromKafka(config Config.Configurations) {
 
-	fmt.Println("Start receiving from Kafka")
-	c, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers": config.Kafka.URL,
-		"group.id":          "group-id-1",
-		"auto.offset.reset": "earliest",
-		"security.protocol": "SASL_SSL",
-		"sasl.mechanisms":   "PLAIN",
-		"sasl.username":     config.Kafka.UserName,
-		"sasl.password":     config.Kafka.Password})
-
-	if err != nil {
-		panic(err)
+func KafkaConsumer(configurations Config.Configurations) {
+	config := kafka.ReaderConfig{
+		Brokers:  []string{configurations.Kafka.URL},
+		Topic:    configurations.Kafka.Topic,
+		MaxBytes: 1e6,
 	}
-
-	c.SubscribeTopics([]string{config.Kafka.Topic}, nil)
-	sigchan := make(chan os.Signal, 1)
-	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
-
-	run := true
-	for run == true {
-		select {
-		case sig := <-sigchan:
-			fmt.Printf("Caught signal %v: terminating\n", sig)
-			run = false
-		default:
-			ev, err := c.ReadMessage(10)
-			if err != nil {
-				// Errors are informational and automatically handled by the consumer
-				continue
-			}
-			fmt.Printf("Consumed event from topic %s: key = %-10s value = %s\n",
-				*ev.TopicPartition.Topic, string(ev.Key), string(ev.Value))
+	reader := kafka.NewReader(config)
+	for {
+		message, error := reader.ReadMessage(context.Background())
+		if error != nil {
+			fmt.Println(time.Now().String()+":: Error happened during calling kafka server %v", error)
+			continue
 		}
+		fmt.Println(time.Now().String() + "::message of transaction consumed:: " + string(message.Value))
 	}
-	c.Close()
 }

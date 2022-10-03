@@ -5,7 +5,5 @@ database:
   connectionString : "postgresql://abdelrahman:inkP0FcTDCTQ4cBxYmXLDQ@free-tier13.aws-eu-central-1.cockroachlabs.cloud:26257/cloned-grebe-2605.defaultdb?sslmode=verify-full"
 
 kafka:
-  URL : "pkc-6ojv2.us-west4.gcp.confluent.cloud:9092"
+  URL : "localhost:9092"
   topic : "topic_0"
-  username : "WLTYBME477ZYUL6H"
-  password : "b/pbS2ooJ0NOIGoY7jBqtso57HaU+yg/GGuFuC82dSSt2k8YCFqN0kXjMljlF55Z"

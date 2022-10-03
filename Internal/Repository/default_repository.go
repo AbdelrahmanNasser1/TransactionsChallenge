@@ -32,3 +32,10 @@ func (db *databaseRepo) Create(ctx context.Context, model *Models.TransactionMod
 	}
 	return nil
 }
+func (db *databaseRepo) Update(ctx context.Context, model *Models.TransactionModel) error {
+	_, err := db.conn.NewUpdate().Model(model).WherePK().Exec(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}

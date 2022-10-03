@@ -39,10 +39,7 @@ func (c *TransactionController) handleCreateTransaction(w http.ResponseWriter, r
 		fmt.Fprintf(w, err.Error())
 	}
 
-	resBool := stream.SaveToKafka(c.Configurations, modelTransaction)
-	if resBool == true {
-		modelTransaction.Status = true
-	}
+	stream.KafkaProducer(&modelTransaction, c.Configurations)
 
 	res, err := c.TransactionService.Create(context.Background(), &modelTransaction)
 	if err != nil {
@@ -53,8 +50,6 @@ func (c *TransactionController) handleCreateTransaction(w http.ResponseWriter, r
 func (c *TransactionController) handleGetTransactions(w http.ResponseWriter, r *http.Request) {
 
 	res, err := c.TransactionService.List(context.Background())
-
-	stream.ReceiveFromKafka(c.Configurations)
 
 	if err != nil {
 		fmt.Fprintf(w, err.Error())

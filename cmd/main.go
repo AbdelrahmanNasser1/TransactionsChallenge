@@ -16,6 +16,7 @@ func main() {
 	if err != nil {
 		fmt.Println("Failed to read Config file")
 	}
+
 	con, err := db.NewDBConnection(config)
 	if err != nil {
 		fmt.Println(err.Error())
