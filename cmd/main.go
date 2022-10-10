@@ -17,14 +17,14 @@ func main() {
 	if err != nil {
 		fmt.Println("Failed to read Config file")
 	}
-	stream.KafkaConsumer(config)
 	con, err := db.NewDBConnection(config)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+	stream.InitializeKafka(&config)
 	tranRepo := Repository.NewDefaultRepository(con)
 	tranSer := Services.NewDefaultService(tranRepo)
+	go stream.KafkaConsumer(tranSer)
 	api.NewTransactionController(tranSer, config)
-	//stream.KafkaConsumer(config)
 
 }

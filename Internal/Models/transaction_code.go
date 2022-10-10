@@ -13,7 +13,7 @@ import (
 
 type TransactionModel struct {
 	bun.BaseModel `bun:"table:transaction"`
-	ID            uuid.UUID `bun:"id,notnull,pk,type:uuid,default:gen_random_uuid()"`
+	Id            uuid.UUID `bun:"id,notnull,pk,type:uuid,default:gen_random_uuid()"`
 	Amount        int64     `bun:"amount,notnull"`
 	Currency      string    `bun:"currency,notnull"`
 	CreatedAt     string    `bun:"createdat,notnull"`

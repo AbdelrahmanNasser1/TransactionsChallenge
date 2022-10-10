@@ -16,8 +16,9 @@ type DatabaseConfigurations struct {
 }
 
 type KafkaConfiguration struct {
-	URL   string
-	Topic string
+	URL     string
+	Topic   string
+	MaxByte int
 }
 
 // Configurations exported

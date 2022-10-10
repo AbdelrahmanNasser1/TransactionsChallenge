@@ -5,6 +5,7 @@ import (
 	"FirstWeek/Internal/Repository"
 	"FirstWeek/Transaction"
 	"context"
+	"github.com/dranikpg/dto-mapper"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -24,24 +25,15 @@ func (s *DefaultTransactionService) Create(ctx context.Context, transaction *Tra
 	if err != nil {
 		return nil, err
 	}
-	model := Models.TransactionModel{
-		ID:        transaction.Id,
-		Amount:    int64(transaction.Amount),
-		Currency:  transaction.Currency,
-		CreatedAt: transaction.CreatedAt,
-		Status:    transaction.Status,
-	}
-	if err := s.transactionRepo.Create(ctx, &model); err != nil {
+	model := &Models.TransactionModel{}
+	dto.Map(model, transaction)
+
+	if err := s.transactionRepo.Create(ctx, model); err != nil {
 		return nil, err
 	}
-	res := Transaction.Transaction{
-		Id:        model.ID,
-		Amount:    float64(model.Amount),
-		Currency:  model.Currency,
-		CreatedAt: model.CreatedAt,
-		Status:    model.Status,
-	}
-	return &res, nil
+	res := &Transaction.Transaction{}
+	dto.Map(&res, model)
+	return res, nil
 }
 
 func (s *DefaultTransactionService) List(ctx context.Context) ([]Transaction.Transaction, error) {
@@ -49,15 +41,17 @@ func (s *DefaultTransactionService) List(ctx context.Context) ([]Transaction.Tra
 	if err != nil {
 		return nil, err
 	}
-	var temp Transaction.Transaction
-	var result []Transaction.Transaction
-	for _, e := range models {
-		temp.Id = e.ID
-		temp.Amount = float64(e.Amount)
-		temp.Currency = e.Currency
-		temp.CreatedAt = e.CreatedAt
-		temp.Status = e.Status
-		result = append(result, temp)
+	var result = &[]Transaction.Transaction{}
+	dto.Map(result, models)
+	return *result, nil
+}
+func (s *DefaultTransactionService) Update(ctx context.Context, model Models.TransactionModel) ([]Transaction.Transaction, error) {
+
+	err := s.transactionRepo.Update(ctx, &model)
+	if err != nil {
+		return nil, err
 	}
-	return result, nil
+	var result = &[]Transaction.Transaction{}
+	dto.Map(result, model)
+	return *result, nil
 }

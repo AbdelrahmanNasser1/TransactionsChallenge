@@ -1,5 +1,5 @@
 server:
-  port: 3000
+  port: 8080
 
 database:
   connectionString : "postgresql://abdelrahman:inkP0FcTDCTQ4cBxYmXLDQ@free-tier13.aws-eu-central-1.cockroachlabs.cloud:26257/cloned-grebe-2605.defaultdb?sslmode=verify-full"
@@ -7,3 +7,4 @@ database:
 kafka:
   URL : "kafka:29092"
   topic : "topic_0"
+  maxBytes: 30
